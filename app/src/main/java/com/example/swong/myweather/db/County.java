@@ -7,6 +7,8 @@ public class County extends DataSupport {
 
     private int id;
 
+    private int countyId;
+
     private String name;
 
     public int getId() {
@@ -16,6 +18,10 @@ public class County extends DataSupport {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getCountyId() {return countyId;}
+
+    public void setCountyId(int countyId) {this.countyId = countyId;}
 
     public String getName() {
         return name;

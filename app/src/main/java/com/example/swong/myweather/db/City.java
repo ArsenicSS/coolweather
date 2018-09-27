@@ -7,6 +7,8 @@ public class City extends DataSupport {
 
     private int id;
 
+    private int cityId;
+
     private String name;
 
     public int getId() {
@@ -16,6 +18,10 @@ public class City extends DataSupport {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getCityId() {return cityId;}
+
+    public void setCityId(int cityId) {this.cityId = cityId;}
 
     public String getName() {
         return name;
