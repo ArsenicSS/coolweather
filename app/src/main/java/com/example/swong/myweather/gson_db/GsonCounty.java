@@ -5,6 +5,8 @@ public class GsonCounty {
 
     private int id;
 
+    private String weather_id;
+
     private String name;
 
     public int getId() {
@@ -13,6 +15,14 @@ public class GsonCounty {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getWeatherId() {
+        return weather_id;
+    }
+
+    public void setWeatherId(String weather_id) {
+        this.weather_id = weather_id;
     }
 
     public String getName() {

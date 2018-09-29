@@ -1,9 +1,9 @@
 package com.example.swong.myweather;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.text.StaticLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.example.swong.myweather.db.City;
 import com.example.swong.myweather.db.County;
 import com.example.swong.myweather.db.Province;
+import com.example.swong.myweather.gson.Weather;
 import com.example.swong.myweather.gson_db.GsonCity;
 import com.example.swong.myweather.gson_db.GsonCounty;
 import com.example.swong.myweather.gson_db.GsonProvince;
@@ -38,11 +39,14 @@ public class ChooseAreaFragment extends Fragment {
     public static final String LEVEL_PROVINCE = "LEVEL_PROVINCE";
     public static final String LEVEL_CITY = "LEVEL_CITY";
     public static final String LEVEL_COUNTY = "LEVEL_COUNTY";
+    public static final String LEVEL_WEATHER = "LEVEL_WEATHER";
+
     private String currentLevel;
 
     private int provinceId;
     private int cityId;
     private int countyId;
+    private String weatherId;
 
 
     private List<String> datas = new ArrayList<>();
@@ -52,15 +56,16 @@ public class ChooseAreaFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area, container, false);
 
-        final TextView titleRank = (TextView)view.findViewById(R.id.title_rank);
-        currentLevel = LEVEL_PROVINCE;
+        final TextView titleRank = view.findViewById(R.id.title_rank);
+        final ListView listView = view.findViewById(R.id.list_view);
 
+        currentLevel = LEVEL_PROVINCE;
         try {
             queryProvinceData();
         }catch (Exception e){e.printStackTrace();}
 
         final ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity() ,android.R.layout.simple_list_item_1, datas);
-        ListView listView = view.findViewById(R.id.list_view);
+        //listView = view.findViewById(R.id.list_view);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -70,14 +75,16 @@ public class ChooseAreaFragment extends Fragment {
                   try {
                       currentLevel = LEVEL_CITY;
                       List<Province> mProvince = DataSupport.select("provinceId").where("name = ?", datas.get(i)).find(Province.class);
+                      String string = datas.get(i);
                       for(Province procince : mProvince){
                           provinceId = procince.getId();
                       }
-                      String string = datas.get(i);
 
                       DataSupport.deleteAll(City.class);
                       queryCityData("/" + provinceId);
+
                       adapter.notifyDataSetChanged();
+                      listView.setSelection(0);
                       titleRank.setText(string);
 
                   }catch (Exception e){e.printStackTrace();}
@@ -86,19 +93,31 @@ public class ChooseAreaFragment extends Fragment {
                   try {
                       currentLevel = LEVEL_COUNTY;
                       List<City> mCity = DataSupport.select("cityId").where("name = ?", datas.get(i)).find(City.class);
+                      String string = datas.get(i);
                       for(City city : mCity){
                           cityId = city.getCityId();
                       }
-                      String string = datas.get(i);
 
                       DataSupport.deleteAll(County.class);
                       queryCountyData("/" + cityId);
+
                       adapter.notifyDataSetChanged();
+                      listView.setSelection(0);
                       titleRank.setText(string);
                   }catch (Exception e){e.printStackTrace();}
 
-              }else if(currentLevel == LEVEL_PROVINCE){
+              }else if(currentLevel == LEVEL_COUNTY){
                   try {
+                      //currentLevel = LEVEL_WEATHER;
+                      //List<County> mCounty = DataSupport.select("weatherId").where("name = ?", datas.get(i)).find(County.class);
+                      //for(County county : mCounty){
+                      //    weatherId = county.getWeatherId();
+                      //}
+                      //queryWeatherData("cityid=" + weatherId);
+                      Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                      Log.d(TAG, "onItemClick: Intent intent = new Intent(getActivity(), WeatherActivity.class");
+
+                      startActivity(intent);
 
                   }catch (Exception e){e.printStackTrace();}
               }
@@ -123,7 +142,7 @@ public class ChooseAreaFragment extends Fragment {
         //从网络读取
         else {
             sendRequest("http://guolin.tech/api/china");
-            Thread.sleep(1000);
+            Thread.sleep(500);
             queryProvinceData();
         }
     }
@@ -136,13 +155,12 @@ public class ChooseAreaFragment extends Fragment {
             datas.clear();
             for(City city : cityList){
                 datas.add(city.getName());
-
             }
         }
         //从网络读取
         else {
             sendRequest("http://guolin.tech/api/china" + id);
-            Thread.sleep(1000);
+            Thread.sleep(500);
             queryCityData(" ");
         }
     }
@@ -160,10 +178,15 @@ public class ChooseAreaFragment extends Fragment {
         //从网络读取
         else {
             sendRequest("http://guolin.tech/api/china/" + cityId + id);
-            Thread.sleep(1000);
+            Thread.sleep(500);
             queryCountyData(" ");
         }
     }
+
+    //public void queryWeatherData(String id) throws InterruptedException{
+    //    sendRequest("http://guolin.tech/api/weather?" + id + "&key=b1b5c44edc644354a7316756023a4e95");
+    //    Thread.sleep(500);
+    //}
 
 
     public void sendRequest(String url){
@@ -208,10 +231,16 @@ public class ChooseAreaFragment extends Fragment {
             for (GsonCounty gsonCounty : gsonCountyList) {
                 County county = new County();
                 county.setCountyId(gsonCounty.getId());
+                county.setWeatherId(gsonCounty.getWeatherId());
                 county.setName(gsonCounty.getName());
                 county.save();
             }
         }
+        //else if(currentLevel == LEVEL_WEATHER){
+        //    Log.d(TAG, "parseJSONWithGSON: Intent intent = new Intent(getActivity(), WeatherActivity.class);");
+        //    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+        //    startActivity(intent);
+        //}
     }
 
 }
