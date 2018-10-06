@@ -9,6 +9,13 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary">
 
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:drawableLeft="@drawable/ic_back"/>
+
         <TextView
             android:id="@+id/title_rank"
             android:layout_width="wrap_content"

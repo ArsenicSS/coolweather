@@ -24,6 +24,8 @@ import com.example.swong.myweather.util.HttpUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
@@ -48,7 +50,6 @@ public class ChooseAreaFragment extends Fragment {
     private int countyId;
     private String weatherId;
 
-
     private List<String> datas = new ArrayList<>();
 
     @Nullable
@@ -65,7 +66,6 @@ public class ChooseAreaFragment extends Fragment {
         }catch (Exception e){e.printStackTrace();}
 
         final ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity() ,android.R.layout.simple_list_item_1, datas);
-        //listView = view.findViewById(R.id.list_view);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -108,16 +108,23 @@ public class ChooseAreaFragment extends Fragment {
 
               }else if(currentLevel == LEVEL_COUNTY){
                   try {
-                      //currentLevel = LEVEL_WEATHER;
-                      //List<County> mCounty = DataSupport.select("weatherId").where("name = ?", datas.get(i)).find(County.class);
-                      //for(County county : mCounty){
-                      //    weatherId = county.getWeatherId();
-                      //}
-                      //queryWeatherData("cityid=" + weatherId);
-                      Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                      Log.d(TAG, "onItemClick: Intent intent = new Intent(getActivity(), WeatherActivity.class");
+                      currentLevel = LEVEL_WEATHER;
+                      List<County> mCounty = DataSupport.select("weatherId").where("name = ?", datas.get(i)).find(County.class);
+                      for(County county : mCounty){
+                          weatherId = county.getWeatherId();
+                      }
 
-                      startActivity(intent);
+                      //如果当前是开始界面, 则跳转WeatherActivity
+                      if(getActivity() instanceof MainActivity){
+                          Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                          intent.putExtra("weatherId", weatherId);
+                          startActivity(intent);
+                          getActivity().finish();
+                      }else if (getActivity() instanceof WeatherActivity){
+                      //如果当前是天气界面的选择地区Fragment, 则刷新
+                          Log.d(TAG, "onItemClick: ");
+                      }
+
 
                   }catch (Exception e){e.printStackTrace();}
               }
@@ -183,11 +190,6 @@ public class ChooseAreaFragment extends Fragment {
         }
     }
 
-    //public void queryWeatherData(String id) throws InterruptedException{
-    //    sendRequest("http://guolin.tech/api/weather?" + id + "&key=b1b5c44edc644354a7316756023a4e95");
-    //    Thread.sleep(500);
-    //}
-
 
     public void sendRequest(String url){
         HttpUtil.sendOkHttpRequest(url, new okhttp3.Callback(){
@@ -236,11 +238,6 @@ public class ChooseAreaFragment extends Fragment {
                 county.save();
             }
         }
-        //else if(currentLevel == LEVEL_WEATHER){
-        //    Log.d(TAG, "parseJSONWithGSON: Intent intent = new Intent(getActivity(), WeatherActivity.class);");
-        //    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-        //    startActivity(intent);
-        //}
     }
 
 }
