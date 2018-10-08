@@ -1,5 +1,6 @@
 package com.example.swong.myweather;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -29,9 +31,10 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
-    
+
     ScrollView weatherLayout;
     DrawerLayout drawerLayout;
+    ProgressDialog progressDialog;
 
     static String mTxtUpdatetime;
 
@@ -79,7 +82,8 @@ public class WeatherActivity extends AppCompatActivity {
     TextView txtCarWashing;
     @Bind(R.id.txt_sport)
     TextView txtSport;
-
+    @Bind(R.id.swipe_refresh)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +97,13 @@ public class WeatherActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
 
         Intent intent = getIntent();
-        String weatherId = intent.getStringExtra("weatherId");
+        final String weatherId = intent.getStringExtra("weatherId");
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("加载中...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
         String link = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=b1b5c44edc644354a7316756023a4e95";
         sendRequest(link);
 
@@ -101,6 +111,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 drawerLayout.openDrawer(Gravity.START);
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshWeather(weatherId);
             }
         });
     }
@@ -202,6 +219,7 @@ public class WeatherActivity extends AppCompatActivity {
                     txtComfort.setText("舒适度: " + comf_txt);//舒适度
                     txtCarWashing.setText("\n洗车指数: " + cw_txt);//洗车指数
                     txtSport.setText("\n运动指数: " + sport_txt);//运动指数
+                    progressDialog.dismiss();
                     weatherLayout.setVisibility(View.VISIBLE);
 
                 }
@@ -210,6 +228,18 @@ public class WeatherActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void refreshWeather(String id){
+        final String link = "http://guolin.tech/api/weather?cityid=" + id + "&key=b1b5c44edc644354a7316756023a4e95";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sendRequest(link);
+            }
+        });
+        swipeRefreshLayout.setRefreshing(false);
+
     }
 
 }
